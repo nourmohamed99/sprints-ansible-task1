@@ -1,0 +1,2 @@
+[nginx] 
+nginx-1 ansible_host=34.204.3.163 ansible_user=ubuntu ansible_ssh_private_key_file=./sprints-key.pem

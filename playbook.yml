@@ -1,0 +1,70 @@
+- name: Install and configure NGINX
+  hosts: nginx
+  become: true
+
+  tasks:
+  - name: Install NGINX package
+    apt:
+      name: nginx
+      state: present
+  - name: copy index file 
+    copy:
+      src: index.html
+      dest: /var/www/html/index.html 
+
+  - name: Modify Nginx configuration file
+    replace:
+      path: /etc/nginx/sites-enabled/default
+      regexp: 'listen\s+80\s+default_server;'
+      replace: 'listen 8090 default_server;'
+    notify: Restart Nginx    
+
+  - name: clone repo
+    git:
+      repo: https://github.com/sabreensalama/dockerize-node-app-task
+      dest: /app
+
+  - name: install npm 
+    apt:
+      name:
+        - nodejs
+        - npm
+      state: present
+      update_cache: yes  
+  - name: install app dependency
+    npm:
+     path: /app
+     state: latest    
+
+  - name: Start app
+    shell: node /app/server.js &
+
+  handlers:
+    - name: Restart NGINX
+      systemd:
+        name: nginx
+        state: restarted  
+  # - name: install nodejs
+  #   apt: 
+  #      name: nodejs
+  # - name: Update apt cache
+  #   apt:
+  #      update_cache: yes              
+  # - name: install app DBNS
+  #   npm:
+  #     path: /app
+  #     state: latest
+  # - name: listen again
+  #   become: true
+  #   blockinfile:
+  #     path: /etc/nginx/sites-available/default
+  #     block: |
+  #       server {
+  #           listen 80;
+  #           # listen [::]:8080;
+  #           # server_name _;
+  #           # root /var/www/html;
+  #           location / {
+  #               proxy_pass http://0.0.0.0:8080;
+  #           }
+  #         }    
